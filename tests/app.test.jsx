@@ -132,7 +132,7 @@ describe('shared layout and routes', () => {
     renderApp('/')
     await screen.findByRole('heading', { name: 'A little order. A clearer view.' })
     const navigation = screen.getByRole('navigation', { name: 'Main navigation' })
-    for (const [link, heading] of [['About', 'About Itemspace'], ['Dashboard', 'Dashboard'], ['Login', 'Login'], ['Items', 'All the little details.'], ['Home', 'A little order. A clearer view.']]) {
+    for (const [link, heading] of [['About', 'About Itemspace'], ['Dashboard', 'Dashboard'], ['Login', 'Login'], ['Signup', 'Create account'], ['Items', 'All the little details.'], ['Home', 'A little order. A clearer view.']]) {
       fireEvent.click(screen.getByRole('link', { name: link, exact: true }))
       await screen.findByRole('heading', { name: heading, exact: true })
       expect(screen.getByRole('navigation', { name: 'Main navigation' })).toBe(navigation)

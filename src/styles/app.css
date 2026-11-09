@@ -282,11 +282,17 @@ a[aria-disabled="true"] {
   gap:6px
 }
 
-.navigation a {
+.navigation a,.navigation .nav-logout,.nav-auth-status {
   border-radius:7px;
   padding:8px 12px;
   color:#69765f;
   font-size:13px
+}
+
+.navigation .nav-logout {
+  background:transparent;
+  border-color:transparent;
+  font-weight:400
 }
 
 .navigation a:hover,.navigation a.active {
@@ -636,7 +642,7 @@ a[aria-disabled="true"] {
     width:100%;
     gap:2px
   }
-  .navigation a {
+  .navigation a,.navigation .nav-logout,.nav-auth-status {
     padding:7px 9px;
     font-size:12px
   }

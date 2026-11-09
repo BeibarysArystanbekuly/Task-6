@@ -1,9 +1,8 @@
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
-import { MemoryRouter } from 'react-router'
+import { HashRouter } from 'react-router'
 import AuthProvider from '../src/context/AuthProvider.jsx'
-import LoginPage from '../src/pages/LoginPage.jsx'
-import NavBar from '../src/components/NavBar.jsx'
+import App from '../src/App.jsx'
 
 const firebase = vi.hoisted(() => ({
   auth: {}, googleProvider: {}, browserLocalPersistence: {},
@@ -32,10 +31,12 @@ beforeEach(() => {
 })
 afterEach(cleanup)
 
-async function openLogin() {
+async function openLogin(path = '/login', { waitForLogin = true } = {}) {
+  window.history.replaceState(null, '', `/#${path}`)
   await act(async () => {
-    render(<AuthProvider><MemoryRouter><NavBar /><LoginPage /></MemoryRouter></AuthProvider>)
+    render(<AuthProvider><HashRouter><App /></HashRouter></AuthProvider>)
   })
+  if (path === '/login' && waitForLogin) await screen.findByRole('heading', { name: 'Login', exact: true })
 }
 
 function fillCredentials(password = 'example-password') {
@@ -47,25 +48,29 @@ it('signs in with email and password and updates the account navigation', async 
   await openLogin()
   fillCredentials()
   fireEvent.click(screen.getByRole('button', { name: 'Sign in', exact: true }))
-  expect(await screen.findByRole('heading', { name: 'Your account' })).toBeTruthy()
+  expect(await screen.findByRole('heading', { name: 'Profile' })).toBeTruthy()
   expect(firebase.signInWithEmailAndPassword).toHaveBeenCalledWith(firebase.auth, member.email, 'example-password')
-  expect(screen.getByRole('link', { name: 'Account', exact: true })).toBeTruthy()
-  expect(screen.getByText(`Signed in as ${member.email}.`)).toBeTruthy()
+  expect(screen.getByRole('link', { name: 'Profile', exact: true })).toBeTruthy()
+  expect(screen.getByText(member.email)).toBeTruthy()
+  expect(screen.getByText(member.uid)).toBeTruthy()
+  expect(window.location.hash).toBe('#/profile')
 })
 
 it('creates an account after matching the password confirmation', async () => {
   await openLogin()
-  fireEvent.click(screen.getByRole('button', { name: 'New here? Create an account' }))
+  fireEvent.click(await screen.findByRole('link', { name: 'New here? Create an account' }))
+  await screen.findByRole('form', { name: 'Signup' })
   fillCredentials()
   fireEvent.change(screen.getByLabelText('Confirm password'), { target: { value: 'example-password' } })
   fireEvent.click(screen.getByRole('button', { name: 'Create account', exact: true }))
-  expect(await screen.findByRole('heading', { name: 'Your account' })).toBeTruthy()
+  expect(await screen.findByRole('heading', { name: 'Profile' })).toBeTruthy()
   expect(firebase.createUserWithEmailAndPassword).toHaveBeenCalledWith(firebase.auth, member.email, 'example-password')
 })
 
 it('prevents signup when the passwords do not match', async () => {
   await openLogin()
-  fireEvent.click(screen.getByRole('button', { name: 'New here? Create an account' }))
+  fireEvent.click(await screen.findByRole('link', { name: 'New here? Create an account' }))
+  await screen.findByRole('form', { name: 'Signup' })
   fillCredentials()
   fireEvent.change(screen.getByLabelText('Confirm password'), { target: { value: 'different-password' } })
   fireEvent.click(screen.getByRole('button', { name: 'Create account', exact: true }))
@@ -76,14 +81,15 @@ it('prevents signup when the passwords do not match', async () => {
 it('starts Google sign-in without requiring email form fields', async () => {
   await openLogin()
   fireEvent.click(screen.getByRole('button', { name: 'Continue with Google' }))
-  expect(await screen.findByRole('heading', { name: 'Your account' })).toBeTruthy()
+  expect(await screen.findByRole('heading', { name: 'Profile' })).toBeTruthy()
   expect(firebase.signInWithPopup).toHaveBeenCalledWith(firebase.auth, firebase.googleProvider)
 })
 
 it('signs out of a restored session', async () => {
   await openLogin()
   act(() => notifyUser(member))
-  fireEvent.click(screen.getByRole('button', { name: 'Log out' }))
+  await screen.findByRole('heading', { name: 'Profile' })
+  fireEvent.click(screen.getAllByRole('button', { name: 'Logout' })[1])
   expect(await screen.findByRole('heading', { name: 'Login' })).toBeTruthy()
   expect(firebase.signOut).toHaveBeenCalledWith(firebase.auth)
   expect(screen.getByRole('link', { name: 'Login', exact: true })).toBeTruthy()
@@ -104,7 +110,7 @@ it('shows login errors, keeps credentials for a retry, and disables pending cont
   expect(screen.getByRole('button', { name: 'Sign in', exact: true }).disabled).toBe(false)
   firebase.signInWithEmailAndPassword.mockImplementation(async () => { notifyUser(member); return { user: member } })
   fireEvent.click(screen.getByRole('button', { name: 'Sign in', exact: true }))
-  await screen.findByRole('heading', { name: 'Your account' })
+  await screen.findByRole('heading', { name: 'Profile' })
   expect(screen.queryByRole('alert')).toBeNull()
 })
 
@@ -119,10 +125,11 @@ it('allows retry after cancelling Google sign-in', async () => {
 it('keeps the account visible and shows an error if logout fails', async () => {
   await openLogin()
   act(() => notifyUser(member))
+  await screen.findByRole('heading', { name: 'Profile' })
   firebase.signOut.mockRejectedValue({ code: 'auth/network-request-failed' })
-  fireEvent.click(screen.getByRole('button', { name: 'Log out' }))
+  fireEvent.click(screen.getAllByRole('button', { name: 'Logout' })[1])
   expect((await screen.findByRole('alert')).textContent).toBe('Check your internet connection and try again.')
-  expect(screen.getByRole('heading', { name: 'Your account' })).toBeTruthy()
+  expect(await screen.findByRole('heading', { name: 'Profile' })).toBeTruthy()
 })
 
 it('waits for restoration before showing a signed-out form', async () => {
@@ -131,5 +138,77 @@ it('waits for restoration before showing a signed-out form', async () => {
   expect(screen.getByText('Restoring your session…')).toBeTruthy()
   expect(screen.queryByRole('form', { name: 'Login' })).toBeNull()
   act(() => notifyUser(member))
-  expect(screen.getByRole('heading', { name: 'Your account' })).toBeTruthy()
+  expect(await screen.findByRole('heading', { name: 'Profile' })).toBeTruthy()
+})
+
+it('redirects a direct unauthenticated profile visit to login', async () => {
+  await openLogin('/profile')
+  await screen.findByRole('heading', { name: 'Login', exact: true })
+  expect(window.location.hash).toBe('#/login')
+  expect(screen.queryByText(member.uid)).toBeNull()
+  expect(screen.getByRole('link', { name: 'Login', exact: true })).toBeTruthy()
+  expect(screen.getByRole('link', { name: 'Signup', exact: true })).toBeTruthy()
+  expect(screen.queryByRole('link', { name: 'Profile', exact: true })).toBeNull()
+  expect(screen.queryByRole('button', { name: 'Logout' })).toBeNull()
+})
+
+it('keeps the profile URL while restoring a saved session and then shows its details', async () => {
+  firebase.onAuthStateChanged.mockImplementation((auth, callback) => { notifyUser = callback; return () => {} })
+  await openLogin('/profile')
+  await screen.findByText('Restoring your session…')
+  expect(window.location.hash).toBe('#/profile')
+  expect(screen.queryByRole('heading', { name: 'Login' })).toBeNull()
+  act(() => notifyUser(member))
+  await screen.findByRole('heading', { name: 'Profile' })
+  expect(screen.getByText(member.email)).toBeTruthy()
+  expect(screen.getByText(member.uid)).toBeTruthy()
+  expect(window.location.hash).toBe('#/profile')
+  expect(screen.queryByRole('link', { name: 'Signup', exact: true })).toBeNull()
+  expect(screen.queryByRole('link', { name: 'Login', exact: true })).toBeNull()
+})
+
+it('removes the profile and redirects when Firebase reports a sign-out in another tab', async () => {
+  firebase.onAuthStateChanged.mockImplementation((auth, callback) => { notifyUser = callback; callback(member); return () => {} })
+  await openLogin('/profile')
+  await screen.findByRole('heading', { name: 'Profile' })
+  act(() => notifyUser(null))
+  await screen.findByRole('heading', { name: 'Login' })
+  expect(window.location.hash).toBe('#/login')
+  expect(screen.queryByText(member.email)).toBeNull()
+  expect(screen.queryByText(member.uid)).toBeNull()
+})
+
+it.each(['/login', '/signup'])('redirects signed-in users from %s to their profile', async (path) => {
+  firebase.onAuthStateChanged.mockImplementation((auth, callback) => { callback(member); return () => {} })
+  await openLogin(path, { waitForLogin: false })
+  await screen.findByRole('heading', { name: 'Profile' })
+  expect(window.location.hash).toBe('#/profile')
+})
+
+it('supports logout from the NavBar on a public page', async () => {
+  firebase.onAuthStateChanged.mockImplementation((auth, callback) => { notifyUser = callback; callback(member); return () => {} })
+  await openLogin('/about')
+  await screen.findByRole('heading', { name: 'About Itemspace' })
+  fireEvent.click(screen.getByRole('button', { name: 'Logout' }))
+  await screen.findByRole('heading', { name: 'Login' })
+  expect(firebase.signOut).toHaveBeenCalledTimes(1)
+  expect(window.location.hash).toBe('#/login')
+})
+
+it.each([
+  ['', 'example-password', 'example-password', 'Enter a valid email address.'],
+  ['invalid-email', 'example-password', 'example-password', 'Enter a valid email address.'],
+  ['member@example.com', '', '', 'Enter your password.'],
+  ['member@example.com', 'short', 'short', 'Use at least 6 characters for your password.'],
+  ['member@example.com', 'example-password', '', 'Passwords do not match.'],
+])('validates signup fields before calling Firebase (%s, %s)', async (email, password, confirmation, message) => {
+  await openLogin('/signup')
+  await screen.findByRole('form', { name: 'Signup' })
+  fireEvent.change(screen.getByLabelText('Email'), { target: { value: email } })
+  fireEvent.change(screen.getByLabelText('Password', { exact: true }), { target: { value: password } })
+  fireEvent.change(screen.getByLabelText('Confirm password'), { target: { value: confirmation } })
+  fireEvent.click(screen.getByRole('button', { name: 'Create account', exact: true }))
+  expect(screen.getByRole('alert').textContent).toBe(message)
+  expect(firebase.createUserWithEmailAndPassword).not.toHaveBeenCalled()
+  expect(window.location.hash).toBe('#/signup')
 })

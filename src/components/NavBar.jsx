@@ -1,5 +1,6 @@
 import { Link, NavLink } from 'react-router'
 import { useAuth } from '../hooks/useAuth.js'
+import LogoutButton from './LogoutButton.jsx'
 
 export default function NavBar() {
   const { user, initializing } = useAuth()
@@ -14,7 +15,17 @@ export default function NavBar() {
         <NavLink to="/items">Items</NavLink>
         <NavLink to="/dashboard">Dashboard</NavLink>
         <NavLink to="/about">About</NavLink>
-        <NavLink to="/login">{initializing || user ? 'Account' : 'Login'}</NavLink>
+        {initializing ? <span className="nav-auth-status" role="status">Checking session…</span> : user ? (
+          <>
+            <NavLink to="/profile">Profile</NavLink>
+            <LogoutButton className="nav-logout" />
+          </>
+        ) : (
+          <>
+            <NavLink to="/login">Login</NavLink>
+            <NavLink to="/signup">Signup</NavLink>
+          </>
+        )}
       </nav>
     </header>
   )

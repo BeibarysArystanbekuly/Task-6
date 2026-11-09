@@ -22,7 +22,8 @@ npm test
 
 - `src/App.jsx`: route definitions and lazy page imports.
 - `src/layouts/RootLayout.jsx`: persistent page shell, NavBar, Suspense, and Outlet.
-- `src/pages/`: Home, About, Items, Item Details, Dashboard, Login, and Not Found.
+- `src/pages/`: Home, About, Items, Item Details, Dashboard, Login, Signup, Profile,
+  and Not Found.
 - `src/components/`: reusable navigation, loading state, and item editor.
 - `src/hooks/`: URL-backed collection queries and asynchronous list requests.
 - `src/services/service.js`: the application API boundary; pages and components
@@ -51,9 +52,13 @@ refresh reloads the latest API data. Empty selections and request failures have
 recovery actions, and stale dashboard responses are ignored.
 Home includes a collection
 illustration and navigation links; About describes the project. Login supports
-email/password sign-in, signup with password confirmation, and Google popup
-sign-in. Signed-in users can view their account and log out on the same page.
-The navigation changes from Login to Account when signed in. Requests disable
+email/password and Google popup sign-in at `/login`. `/signup` provides email,
+password, confirmation, and validation. The protected `/profile` page displays the
+user's email and UID, with logout. It waits for session restoration before
+redirecting signed-out users to `/login`; signed-in users visiting `/login` or
+`/signup` are redirected to `/profile`. Other collection pages remain public.
+The navigation shows Login/Signup or Profile/Logout based on session state.
+Requests disable
 the controls while pending and display readable errors with retry support.
 Collection data remains local to the browser and is not synced to an account.
 
@@ -83,7 +88,7 @@ changes, including sign-out in another tab.
 
 ## Routes
 
-All seven pages use `React.lazy` with a shared `Suspense` loading state. A nested
+All pages use `React.lazy` with a shared `Suspense` loading state. A nested
 boundary keeps the collection visible while the item details module loads.
 Unknown paths show a custom 404 with a Home link. Item IDs must be positive, safe
 whole numbers in canonical decimal form: malformed links show an item 404 without
@@ -98,6 +103,8 @@ fetching an item. Valid IDs that are absent from the API show Item not found.
 | `/items/:id` | Item details and editor |
 | `/dashboard` | Dashboard |
 | `/login` | Login |
+| `/signup` | Signup |
+| `/profile` | Profile (requires sign-in) |
 | `*` | Not Found |
 
 The app uses React Router's HashRouter. Direct links use hash paths such as
