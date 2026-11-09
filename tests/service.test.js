@@ -1,5 +1,5 @@
 import { beforeEach, expect, it, vi } from 'vitest'
-import { createItem, deleteItem, getItem, getItemsList, updateItem } from '../src/services/service.js'
+import { createItem, deleteItem, getItem, getItemsList, invalidateItemsCache, updateItem } from '../src/services/service.js'
 
 vi.mock('../src/api/settings.js', () => ({
   DATA_KEY: 'test-items',
@@ -7,6 +7,7 @@ vi.mock('../src/api/settings.js', () => ({
 }))
 
 beforeEach(() => {
+  invalidateItemsCache()
   localStorage.setItem('test-items', JSON.stringify([
     { id: 1, name: 'Alpha', description: 'First item' },
     { id: 2, name: 'Beta', description: 'Second item' },

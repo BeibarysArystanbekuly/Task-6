@@ -36,6 +36,7 @@ function metric(label, value) {
 const filter = (field) => screen.getByRole('combobox', { name: `Filter by ${field}` })
 
 beforeEach(() => {
+  service.invalidateItemsCache()
   Object.assign(API_CONFIG, { minDelay: 0, maxDelay: 0, errorChance: 0 })
   localStorage.setItem('test-dashboard-items', JSON.stringify(records))
 })

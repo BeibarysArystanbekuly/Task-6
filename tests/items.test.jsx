@@ -4,6 +4,7 @@ import { HashRouter } from 'react-router'
 import App from '../src/App.jsx'
 import AuthTestProvider from './helpers/AuthTestProvider.jsx'
 import { API_CONFIG } from '../src/api/settings.js'
+import { invalidateItemsCache } from '../src/services/service.js'
 
 vi.mock('../src/api/settings.js', () => ({
   DATA_KEY: 'test-filter-items',
@@ -30,6 +31,7 @@ const params = () => new URLSearchParams(window.location.hash.split('?')[1])
 const filter = (field) => screen.getByRole('combobox', { name: `Filter by ${field}` })
 
 beforeEach(() => {
+  invalidateItemsCache()
   Object.assign(API_CONFIG, { minDelay: 0, maxDelay: 0, errorChance: 0 })
   localStorage.setItem('test-filter-items', JSON.stringify(records))
 })
@@ -94,6 +96,7 @@ it('distinguishes no matching results from an empty collection and clears all fi
   expect(filter('category').value).toBe('')
   app.unmount()
   localStorage.setItem('test-filter-items', '[]')
+  invalidateItemsCache()
   renderApp()
   await screen.findByRole('heading', { name: 'A fresh start' })
   expect(screen.getByRole('link', { name: 'Create an item' })).toBeTruthy()
