@@ -21,7 +21,7 @@ function deferred() {
   return { promise, resolve, reject }
 }
 function renderApp(path = '/items') {
-  window.history.replaceState(null, '', `/Task-5/#${path}`)
+  window.history.replaceState(null, '', `/Task-6/#${path}`)
   return render(<HashRouter><App /></HashRouter>)
 }
 const itemLink = (id) => screen.findByRole('link', { name: new RegExp(`^Item ${id} Details ${id}`) })
@@ -147,7 +147,7 @@ describe('shared layout and routes', () => {
     app.unmount()
     render(<HashRouter><App /></HashRouter>)
     await screen.findByDisplayValue('Item 7')
-    expect(window.location.pathname).toBe('/Task-5/')
+    expect(window.location.pathname).toBe('/Task-6/')
     expect(window.location.hash).toContain('/items/7')
   })
 

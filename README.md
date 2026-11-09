@@ -77,13 +77,13 @@ The app uses React Router's HashRouter because GitHub Pages does not rewrite
 arbitrary paths to the SPA entry point. A direct production link looks like:
 
 ```text
-https://beibarysarystanbekuly.github.io/Task-5/#/items/1
-https://beibarysarystanbekuly.github.io/Task-5/#/items?search=medic&page=1&limit=5
+https://beibarysarystanbekuly.github.io/Task-6/#/items/1
+https://beibarysarystanbekuly.github.io/Task-6/#/items?search=medic&page=1&limit=5
 ```
 
 Open links in this form to support refresh and direct entry. In-app Link/NavLink
 navigation, nested routes, and browser Back/Forward work without document reloads.
-Vite's `base` remains `/Task-5/` for asset loading. Enable GitHub Actions under
+Vite's `base` remains `/Task-6/` for asset loading. Enable GitHub Actions under
 repository Settings > Pages; pushes to `main` run `.github/workflows/deploy.yml`.
 
 ## Verification

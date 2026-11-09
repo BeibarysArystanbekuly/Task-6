@@ -22,7 +22,7 @@ const records = [
 ]
 
 function renderApp(path = '/items') {
-  window.history.replaceState(null, '', `/Task-5/#${path}`)
+  window.history.replaceState(null, '', `/Task-6/#${path}`)
   return render(<HashRouter><App /></HashRouter>)
 }
 const params = () => new URLSearchParams(window.location.hash.split('?')[1])
