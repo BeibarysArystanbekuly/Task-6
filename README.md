@@ -33,26 +33,17 @@ npm test
 
 ## API cache
 
-`src/services/service.js` caches item-list responses using the custom in-memory
-cache in `src/services/queryCache.js`. Keys start with `['items', 'list']` and
-include search, category, status, priority, sort, page, and page size. Equivalent
-query ordering and API defaults share a key. Concurrent matching reads share
-one pending request; successful responses (including empty lists) remain fresh
-for 30 seconds after completion. An expired entry is fetched again on its next
-read. At most 100 settled entries are retained using least-recently-used eviction;
-pending requests are retained until they finish. Cache data resets on page reload.
+The custom service caches item lists in memory for **30 seconds**, keyed by
+search, category, status, priority, sort, page, and page size. Matching requests
+share one API call. Expired entries are fetched again on the next read;
+**Reload** and **Try again** bypass the cache. Dashboard and details are uncached.
 
-Reload and Try again force a new request even when a cached response is fresh.
-Successful create, update, complete, and delete operations invalidate every list
-variant, since a mutation can affect filtering, ordering, and pagination. Failed
-mutations preserve valid cache entries. Dashboard and detail reads remain uncached.
-Existing mutation callbacks refresh the visible list after saving or deleting.
+Successful **create, update, complete, and delete** operations invalidate all cached
+lists because they can affect filters, ordering, and pagination. Failed mutations
+preserve existing entries; failed reads are never cached. Outdated responses cannot
+overwrite newer results. The cache resets on page reload.
 
-Superseded requests cannot write to the cache: their callers receive the current
-request/result instead. `useItems` also ignores responses and errors belonging to
-an earlier query or reload, and stops updating state after unmount. Loading,
-retryable errors, empty collections, and no-match results remain separate UI states;
-failed requests are not cached.
+## Collection behavior
 
 The items page is a nested layout: `/items/new` and `/items/:id` render in its
 Outlet beside the collection. Existing create, update, complete, delete, error,
