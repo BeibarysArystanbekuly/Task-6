@@ -1,6 +1,8 @@
 import { Link, NavLink } from 'react-router'
+import { useAuth } from '../hooks/useAuth.js'
 
 export default function NavBar() {
+  const { user, initializing } = useAuth()
   return (
     <header className="topbar">
       <Link className="brand" to="/" aria-label="Itemspace home">
@@ -12,7 +14,7 @@ export default function NavBar() {
         <NavLink to="/items">Items</NavLink>
         <NavLink to="/dashboard">Dashboard</NavLink>
         <NavLink to="/about">About</NavLink>
-        <NavLink to="/login">Login</NavLink>
+        <NavLink to="/login">{initializing || user ? 'Account' : 'Login'}</NavLink>
       </nav>
     </header>
   )

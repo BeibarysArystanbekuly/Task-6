@@ -2,6 +2,7 @@ import { afterEach, expect, it, vi } from 'vitest'
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { HashRouter } from 'react-router'
 import App from '../src/App.jsx'
+import AuthTestProvider from './helpers/AuthTestProvider.jsx'
 
 const routeImport = vi.hoisted(() => {
   let release
@@ -21,7 +22,7 @@ afterEach(cleanup)
 it('keeps navigation and the collection available while a nested page module loads', async () => {
   localStorage.setItem('test-lazy-items', JSON.stringify([{ id: 1, name: 'Deferred item', description: 'From the API' }]))
   window.history.replaceState(null, '', '/#/items')
-  render(<HashRouter><App /></HashRouter>)
+  render(<AuthTestProvider><HashRouter><App /></HashRouter></AuthTestProvider>)
   const card = await screen.findByRole('link', { name: /^Deferred item From the API/ })
   const navigation = screen.getByRole('navigation', { name: 'Main navigation' })
   fireEvent.click(card)

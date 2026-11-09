@@ -2,6 +2,7 @@ import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { HashRouter } from 'react-router'
 import App from '../src/App.jsx'
+import AuthTestProvider from './helpers/AuthTestProvider.jsx'
 import { API_CONFIG } from '../src/api/settings.js'
 import * as service from '../src/services/service.js'
 
@@ -27,7 +28,7 @@ const records = [
 
 function renderDashboard(path = '/dashboard') {
   window.history.replaceState(null, '', `/#${path}`)
-  return render(<HashRouter><App /></HashRouter>)
+  return render(<AuthTestProvider><HashRouter><App /></HashRouter></AuthTestProvider>)
 }
 function metric(label, value) {
   expect(within(screen.getByRole('group', { name: label, exact: true })).getByText(String(value), { exact: true })).toBeTruthy()
@@ -83,7 +84,7 @@ it('updates all statistics for combined URL filters and retains them on refresh 
   await act(async () => { window.history.forward() })
   await waitFor(() => metric('Total items', 1))
   app.unmount()
-  render(<HashRouter><App /></HashRouter>)
+  render(<AuthTestProvider><HashRouter><App /></HashRouter></AuthTestProvider>)
   await waitFor(() => metric('Total items', 1))
   expect(filter('category').value).toBe('Operations')
   expect(filter('priority').value).toBe('High')

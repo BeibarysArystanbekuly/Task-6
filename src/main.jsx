@@ -4,11 +4,14 @@ import { HashRouter } from 'react-router'
 import './styles/global.css'
 import './styles/app.css'
 import App from './App.jsx'
+import AuthProvider from './context/AuthProvider.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <HashRouter>
-      <App />
-    </HashRouter>
+    <AuthProvider>
+      <HashRouter>
+        <App />
+      </HashRouter>
+    </AuthProvider>
   </StrictMode>,
 )

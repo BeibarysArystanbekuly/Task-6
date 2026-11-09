@@ -2,6 +2,7 @@ import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { HashRouter } from 'react-router'
 import App from '../src/App.jsx'
+import AuthTestProvider from './helpers/AuthTestProvider.jsx'
 import { API_CONFIG } from '../src/api/settings.js'
 
 vi.mock('../src/api/settings.js', () => ({
@@ -23,7 +24,7 @@ const records = [
 
 function renderApp(path = '/items') {
   window.history.replaceState(null, '', `/#${path}`)
-  return render(<HashRouter><App /></HashRouter>)
+  return render(<AuthTestProvider><HashRouter><App /></HashRouter></AuthTestProvider>)
 }
 const params = () => new URLSearchParams(window.location.hash.split('?')[1])
 const filter = (field) => screen.getByRole('combobox', { name: `Filter by ${field}` })
@@ -52,7 +53,7 @@ it('filters before sorting and pagination, and retains direct URL state through 
   fireEvent.click(screen.getByRole('button', { name: 'Close item details' }))
   await waitFor(() => expect(window.location.hash).toBe(originalHash))
   app.unmount()
-  render(<HashRouter><App /></HashRouter>)
+  render(<AuthTestProvider><HashRouter><App /></HashRouter></AuthTestProvider>)
   await screen.findByRole('link', { name: /^Alpha Audit note/ })
   expect(filter('priority').value).toBe('High')
 })

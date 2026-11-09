@@ -50,9 +50,36 @@ remain in the URL. An alphabetical five-item preview links to item details;
 refresh reloads the latest API data. Empty selections and request failures have
 recovery actions, and stale dashboard responses are ignored.
 Home includes a collection
-illustration and navigation links; About describes the project. Login provides a
-styled sign-in preview with disabled fields for future authentication. This local
-demo has no authentication service and does not collect credentials.
+illustration and navigation links; About describes the project. Login supports
+email/password sign-in, signup with password confirmation, and Google popup
+sign-in. Signed-in users can view their account and log out on the same page.
+The navigation changes from Login to Account when signed in. Requests disable
+the controls while pending and display readable errors with retry support.
+Collection data remains local to the browser and is not synced to an account.
+
+## Authentication context
+
+Copy `.env.example` to `.env.local`, enter your Firebase web configuration, and
+restart Vite. `src/firebase.js` initializes Firebase Authentication.
+`src/main.jsx` wraps the app in `AuthProvider`, which observes Firebase session
+changes and removes its listener on unmount.
+The provider explicitly enables Firebase's browser local persistence before
+restoring the session, so sign-in survives refreshes and browser restarts when
+browser storage is available. Persistence setup failures are exposed as errors.
+
+Components import `useAuth` from `src/hooks/useAuth.js` to access `user` (the Firebase
+user or `null`), `initializing` (session restoration), `authenticating` (pending
+authentication requests), and `loading` (either state). Wait for `initializing`
+to become false before treating `user === null` as signed out. The hook must be
+used inside `AuthProvider`.
+
+The context also exposes `signup(email, password)`, `login(email, password)`,
+`loginWithGoogle()`, and `logout()`. These return Firebase promises; forms should
+catch their rejections. `error` contains the latest request or setup error and
+keeps its Firebase `code` and `message`. A new request clears the previous error;
+`clearError()` dismisses it manually. Failed requests leave the current user intact.
+Firebase's `onAuthStateChanged` observer updates the shared user after session
+changes, including sign-out in another tab.
 
 ## Routes
 

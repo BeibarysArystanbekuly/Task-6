@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { HashRouter } from 'react-router'
 import App from '../src/App.jsx'
+import AuthTestProvider from './helpers/AuthTestProvider.jsx'
 
 const api = vi.hoisted(() => Object.fromEntries(
   ['getItemsList', 'getDashboard', 'getItem', 'createItem', 'updateItem', 'deleteItem'].map((name) => [name, vi.fn()]),
@@ -22,7 +23,7 @@ function deferred() {
 }
 function renderApp(path = '/items') {
   window.history.replaceState(null, '', `/#${path}`)
-  return render(<HashRouter><App /></HashRouter>)
+  return render(<AuthTestProvider><HashRouter><App /></HashRouter></AuthTestProvider>)
 }
 const itemLink = (id) => screen.findByRole('link', { name: new RegExp(`^Item ${id} Details ${id}`) })
 
@@ -145,7 +146,7 @@ describe('shared layout and routes', () => {
     expect(api.getItemsList).toHaveBeenCalledWith('?search=Item&sort=name-desc&page=2&limit=5')
     expect(screen.getByRole('searchbox').value).toBe('Item')
     app.unmount()
-    render(<HashRouter><App /></HashRouter>)
+    render(<AuthTestProvider><HashRouter><App /></HashRouter></AuthTestProvider>)
     await screen.findByDisplayValue('Item 7')
     expect(window.location.pathname).toBe('/')
     expect(window.location.hash).toContain('/items/7')
