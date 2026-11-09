@@ -7,7 +7,7 @@ simulates loading delays and occasional failures; failed requests can be retried
 
 ## Development
 
-Use Node.js 22.12 or newer (the Pages workflow uses Node 22).
+Use Node.js 22.12 or newer.
 
 ```sh
 npm ci
@@ -54,7 +54,7 @@ illustration and navigation links; About describes the project. Login provides a
 styled sign-in preview with disabled fields for future authentication. This local
 demo has no authentication service and does not collect credentials.
 
-## Routes and GitHub Pages
+## Routes
 
 All seven pages use `React.lazy` with a shared `Suspense` loading state. A nested
 boundary keeps the collection visible while the item details module loads.
@@ -73,18 +73,9 @@ fetching an item. Valid IDs that are absent from the API show Item not found.
 | `/login` | Login |
 | `*` | Not Found |
 
-The app uses React Router's HashRouter because GitHub Pages does not rewrite
-arbitrary paths to the SPA entry point. A direct production link looks like:
-
-```text
-https://beibarysarystanbekuly.github.io/Task-6/#/items/1
-https://beibarysarystanbekuly.github.io/Task-6/#/items?search=medic&page=1&limit=5
-```
-
-Open links in this form to support refresh and direct entry. In-app Link/NavLink
+The app uses React Router's HashRouter. Direct links use hash paths such as
+`/#/items/1` or `/#/items?search=medic&page=1&limit=5`. In-app Link/NavLink
 navigation, nested routes, and browser Back/Forward work without document reloads.
-Vite's `base` remains `/Task-6/` for asset loading. Enable GitHub Actions under
-repository Settings > Pages; pushes to `main` run `.github/workflows/deploy.yml`.
 
 ## Verification
 

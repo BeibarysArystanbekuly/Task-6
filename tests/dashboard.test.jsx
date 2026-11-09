@@ -26,7 +26,7 @@ const records = [
 ].map((item) => ({ description: 'Collection record', ...item }))
 
 function renderDashboard(path = '/dashboard') {
-  window.history.replaceState(null, '', `/Task-6/#${path}`)
+  window.history.replaceState(null, '', `/#${path}`)
   return render(<HashRouter><App /></HashRouter>)
 }
 function metric(label, value) {

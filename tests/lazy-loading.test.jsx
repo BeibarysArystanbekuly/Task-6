@@ -20,7 +20,7 @@ afterEach(cleanup)
 
 it('keeps navigation and the collection available while a nested page module loads', async () => {
   localStorage.setItem('test-lazy-items', JSON.stringify([{ id: 1, name: 'Deferred item', description: 'From the API' }]))
-  window.history.replaceState(null, '', '/Task-6/#/items')
+  window.history.replaceState(null, '', '/#/items')
   render(<HashRouter><App /></HashRouter>)
   const card = await screen.findByRole('link', { name: /^Deferred item From the API/ })
   const navigation = screen.getByRole('navigation', { name: 'Main navigation' })
